@@ -1,6 +1,7 @@
 import {View, Text, TextInput, Button} from 'react-native';
 import React, {useState} from 'react';
 import auth from '@react-native-firebase/auth';
+import {s, vs, ms} from 'react-native-size-matters';
 
 const Login = ({navigation}) => {
   const [email, setEmail] = useState('');

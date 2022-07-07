@@ -55,7 +55,18 @@ const Chat = () => {
       .child('chats')
       .child('12345678')
       .on('value', snapshot => {
-        console.log(snapshot.val());
+        let arr = [];
+        snapshot.forEach(val => arr.push(val.toJSON()));
+        setMessages(arr);
+        // let arr = [];
+        // snapshot.forEach(val => {
+        //   let a = val.key;
+        //   arr.push(snapshot.child(a));
+        // });
+        // let data = arr[1].toJSON();
+        // console.log(data._id);
+
+        // console.log(snapshot.val());
       });
 
     console.log('fetchMsg', messages);
@@ -63,7 +74,6 @@ const Chat = () => {
     const subscribe = auth().onAuthStateChanged(user => setUser(user));
     return subscribe;
   }, []);
-  console.log('uid', user?.uid);
 
   // const onSend = useCallback((messages = []) => {
   //   setMessages(previousMessages =>
@@ -76,7 +86,6 @@ const Chat = () => {
       ...msg,
       createdAt: new Date().toDateString(),
     };
-    setMessages(previousMessages => GiftedChat.append(previousMessages, myMsg));
     database().ref().child('chats').child('12345678').push(myMsg);
   };
 
@@ -87,7 +96,7 @@ const Chat = () => {
           messages={messages}
           onSend={messages => onSend(messages)}
           user={{
-            _id: user?.uid,
+            _id: 1,
           }}
         />
       </View>
