@@ -4,9 +4,10 @@ import React, {useState, useCallback, useEffect} from 'react';
 import {GiftedChat} from 'react-native-gifted-chat';
 import auth from '@react-native-firebase/auth';
 
-const Chat = () => {
+const Chat = ({route}) => {
   const [messages, setMessages] = useState([]);
   const [user, setUser] = useState(null);
+  const {uid} = route.params;
   useEffect(() => {
     // setMessages([
     //   {
@@ -96,7 +97,7 @@ const Chat = () => {
           messages={messages}
           onSend={messages => onSend(messages)}
           user={{
-            _id: 1,
+            _id: uid,
           }}
         />
       </View>

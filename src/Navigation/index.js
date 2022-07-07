@@ -24,7 +24,7 @@ const Navigation = () => {
   // console.log(isLogin);
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={'Home'}>
+      <Stack.Navigator initialRouteName={'Login'}>
         <Stack.Screen name={'Home'} component={Chat} />
         <Stack.Screen name={'Login'} component={Login} />
         <Stack.Screen name={'Signup'} component={Signup} />

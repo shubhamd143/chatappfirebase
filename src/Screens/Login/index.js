@@ -9,7 +9,7 @@ const Login = ({navigation}) => {
   const onLogin = () => {
     auth()
       .signInWithEmailAndPassword(email, password)
-      .then(value => navigation.navigate('Home'))
+      .then(value => navigation.navigate('Home', {uid: value.user.uid}))
       .catch(error => console.log(error));
   };
   return (
