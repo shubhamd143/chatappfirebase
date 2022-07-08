@@ -1,103 +1,152 @@
-import {StyleSheet, Text, View, SafeAreaView} from 'react-native';
+import {StyleSheet, Text, View, SafeAreaView,Image} from 'react-native';
 import database, {firebase} from '@react-native-firebase/database';
-import React, {useState, useCallback, useEffect} from 'react';
-import {GiftedChat} from 'react-native-gifted-chat';
+import React, {useState, useEffect} from 'react';
+import {GiftedChat, InputToolbar, Bubble} from 'react-native-gifted-chat';
 import auth from '@react-native-firebase/auth';
 
-const Chat = ({route}) => {
+const Chat = ({route},props) => {
   const [messages, setMessages] = useState([]);
+  const [calling, setCalling] = useState(true)
   const [user, setUser] = useState(null);
-  const {uid} = route.params;
+  const { loginUserUid } = route.params?.loginUser;
+  const { name, chatUserUid } = route.params?.chatUser;
+  console.log("loginUserUid",loginUserUid)
+  console.log("chatUserName",name,"chatUserUid",chatUserUid)
+
+  const msgDbId = loginUserUid + "-" +chatUserUid;
+  const msgDbIdSwapped = chatUserUid + "-" +loginUserUid;
   useEffect(() => {
-    // setMessages([
-    //   {
-    //     _id: 1,
-    //     text: 'Hello java',
-    //     createdAt: new Date(),
-    //     user: {
-    //       _id: 2,
-    //       name: 'React Native',
-    //       avatar: 'https://placeimg.com/140/140/any',
-    //     },
-    //   },
-    //   {
-    //     _id: 2,
-    //     text: 'My side1',
-    //     createdAt: new Date(),
-    //     user: {
-    //       _id: 1,
-    //       name: 'React Native',
-    //       avatar: 'https://placeimg.com/140/140/any',
-    //     },
-    //   },
-    //   {
-    //     _id: 3,
-    //     text: 'My side2',
-    //     createdAt: new Date(),
-    //     user: {
-    //       _id: 2,
-    //       name: 'React Native',
-    //       avatar: 'https://placeimg.com/140/140/any',
-    //     },
-    //   },
-    //   {
-    //     _id: 4,
-    //     text: 'My side2',
-    //     createdAt: new Date(),
-    //     user: {
-    //       _id: 1,
-    //       name: 'React Native',
-    //       avatar: 'https://placeimg.com/140/140/any',
-    //     },
-    //   },
-    // ]);
-    database()
+    database().ref().once('value', (snapshot) => {
+      const data = snapshot.child("chats"); 
+      if (data.hasChild(msgDbId)) {
+      database()
       .ref()
       .child('chats')
-      .child('12345678')
+      .child(msgDbId)
       .on('value', snapshot => {
         let arr = [];
         snapshot.forEach(val => arr.push(val.toJSON()));
+        arr = arr.reverse()
         setMessages(arr);
-        // let arr = [];
-        // snapshot.forEach(val => {
-        //   let a = val.key;
-        //   arr.push(snapshot.child(a));
-        // });
-        // let data = arr[1].toJSON();
-        // console.log(data._id);
-
-        // console.log(snapshot.val());
       });
+    }else if(data.hasChild(msgDbIdSwapped)){
+      database()
+      .ref()
+      .child('chats')
+      .child(msgDbIdSwapped)
+      .on('value', snapshot => {
+        let arr = [];
+        snapshot.forEach(val => arr.push(val.toJSON()));
+        arr = arr.reverse()
+        setMessages(arr);
+      });
+    }
+      else{
+        console.log("Chat not found");
+      }
+  });
 
-    console.log('fetchMsg', messages);
+
+    // database()
+    //   .ref()
+    //   .child('chats')
+    //   .child('12345678')
+    //   .on('value', snapshot => {
+    //     let arr = [];
+    //     snapshot.forEach(val => arr.push(val.toJSON()));
+    //     arr = arr.reverse()
+    //     setMessages(arr);
+    //   });
 
     const subscribe = auth().onAuthStateChanged(user => setUser(user));
     return subscribe;
-  }, []);
+  }, [calling]);
 
-  // const onSend = useCallback((messages = []) => {
-  //   setMessages(previousMessages =>
-  //     GiftedChat.append(previousMessages, messages),
-  //   );
-  // }, []);
   const onSend = msgArray => {
     const msg = msgArray[0];
     const myMsg = {
       ...msg,
       createdAt: new Date().toDateString(),
     };
-    database().ref().child('chats').child('12345678').push(myMsg);
+    // database().ref().child('chats').child('12345678').push(myMsg);
+
+    database().ref().once('value', (snapshot) => {
+      const data = snapshot.child("chats");
+      if (data.hasChild(msgDbId)) {
+      database()
+      .ref()
+      .child('chats')
+      .child(msgDbId)
+      .push(myMsg);
+    } else if(data.hasChild(msgDbIdSwapped)){
+      database()
+      .ref()
+      .child('chats')
+      .child(msgDbIdSwapped)
+      .push(myMsg);
+    }
+    else{
+        database().ref().child('chats').child(msgDbId).push(myMsg);
+        setCalling(!calling)
+    }
+  });
   };
 
+
+//  const onSnd = (onSendProp,text) => {
+//   console.log("texttexttexttexttext",text)
+//   onSendProp(messages => setMessages(previousMessages => GiftedChat.append(previousMessages, messages)))
+//  }
   return (
     <SafeAreaView style={{flex: 1}}>
       <View style={{flex: 1}}>
         <GiftedChat
           messages={messages}
+          // renderSend = {props => {
+          //   return(
+          //     <View style={{flex:1, backgroundColor:"white", maxWidth:"24%",alignItems:"center", justifyContent:"space-around", height:"100%", flexDirection:"row"}}>
+          //       <View style={{}}>
+          //         <Image style={{width:30, height:40}} source={require("./image.png")}/>
+          //       </View>
+          //       <View style={{}}>
+          //         <Text onPress={(text)=>onSnd(props.onSend,text)} style={{fontSize:16, fontWeight:"800", color:"blue"}}>Send</Text>
+          //       </View>
+
+          //     </View>
+          //   )
+          // }}
+          // renderInputToolbar = {props => {
+          //   return(
+          //     <InputToolbar />
+          //   )
+          // }}
+          renderBubble={props => {
+            return (
+              <Bubble
+                {...props}
+                textStyle={{
+                  left: {
+                    color: 'white',
+                  },
+                  right: {
+                    color: 'white',
+                  },
+                }}
+                wrapperStyle={{
+                  left: {
+                    backgroundColor: 'maroon',
+                  },
+                  right: {
+                    backgroundColor: 'green',
+                  },
+                }}
+              />
+            );
+          }}
           onSend={messages => onSend(messages)}
           user={{
-            _id: uid,
+            _id: loginUserUid,
+            name:name
           }}
         />
       </View>
