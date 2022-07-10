@@ -1,51 +1,58 @@
-import {StyleSheet, Text, View, SafeAreaView,Image} from 'react-native';
+import {StyleSheet, Text, View, SafeAreaView, Image} from 'react-native';
 import database, {firebase} from '@react-native-firebase/database';
 import React, {useState, useEffect} from 'react';
-import {GiftedChat, InputToolbar, Bubble} from 'react-native-gifted-chat';
+import {
+  GiftedChat,
+  InputToolbar,
+  Bubble,
+  MessageText,
+} from 'react-native-gifted-chat';
+import {useRoute} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 
-const Chat = ({route},props) => {
+const Chat = props => {
   const [messages, setMessages] = useState([]);
-  const [calling, setCalling] = useState(true)
+  const [calling, setCalling] = useState(true);
   const [user, setUser] = useState(null);
-  const { loginUserUid } = route.params?.loginUser;
-  const { name, chatUserUid } = route.params?.chatUser;
-  console.log("loginUserUid",loginUserUid)
-  console.log("chatUserName",name,"chatUserUid",chatUserUid)
+  const route = useRoute();
+  const {loginUserUid} = route.params?.loginUser;
+  const {name, chatUserUid} = route.params?.chatUser;
+  console.log('loginUserUid', loginUserUid);
+  console.log('chatUserName', name, 'chatUserUid', chatUserUid);
 
-  const msgDbId = loginUserUid + "-" +chatUserUid;
-  const msgDbIdSwapped = chatUserUid + "-" +loginUserUid;
+  const msgDbId = loginUserUid + '-' + chatUserUid;
+  const msgDbIdSwapped = chatUserUid + '-' + loginUserUid;
   useEffect(() => {
-    database().ref().once('value', (snapshot) => {
-      const data = snapshot.child("chats"); 
-      if (data.hasChild(msgDbId)) {
-      database()
+    database()
       .ref()
-      .child('chats')
-      .child(msgDbId)
-      .on('value', snapshot => {
-        let arr = [];
-        snapshot.forEach(val => arr.push(val.toJSON()));
-        arr = arr.reverse()
-        setMessages(arr);
+      .once('value', snapshot => {
+        const data = snapshot.child('chats');
+        if (data.hasChild(msgDbId)) {
+          database()
+            .ref()
+            .child('chats')
+            .child(msgDbId)
+            .on('value', snapshot => {
+              let arr = [];
+              snapshot.forEach(val => arr.push(val.toJSON()));
+              arr = arr.reverse();
+              setMessages(arr);
+            });
+        } else if (data.hasChild(msgDbIdSwapped)) {
+          database()
+            .ref()
+            .child('chats')
+            .child(msgDbIdSwapped)
+            .on('value', snapshot => {
+              let arr = [];
+              snapshot.forEach(val => arr.push(val.toJSON()));
+              arr = arr.reverse();
+              setMessages(arr);
+            });
+        } else {
+          console.log('Chat not found');
+        }
       });
-    }else if(data.hasChild(msgDbIdSwapped)){
-      database()
-      .ref()
-      .child('chats')
-      .child(msgDbIdSwapped)
-      .on('value', snapshot => {
-        let arr = [];
-        snapshot.forEach(val => arr.push(val.toJSON()));
-        arr = arr.reverse()
-        setMessages(arr);
-      });
-    }
-      else{
-        console.log("Chat not found");
-      }
-  });
-
 
     // database()
     //   .ref()
@@ -68,58 +75,27 @@ const Chat = ({route},props) => {
       ...msg,
       createdAt: new Date().toDateString(),
     };
-    // database().ref().child('chats').child('12345678').push(myMsg);
 
-    database().ref().once('value', (snapshot) => {
-      const data = snapshot.child("chats");
-      if (data.hasChild(msgDbId)) {
-      database()
+    database()
       .ref()
-      .child('chats')
-      .child(msgDbId)
-      .push(myMsg);
-    } else if(data.hasChild(msgDbIdSwapped)){
-      database()
-      .ref()
-      .child('chats')
-      .child(msgDbIdSwapped)
-      .push(myMsg);
-    }
-    else{
-        database().ref().child('chats').child(msgDbId).push(myMsg);
-        setCalling(!calling)
-    }
-  });
+      .once('value', snapshot => {
+        const data = snapshot.child('chats');
+        if (data.hasChild(msgDbId)) {
+          database().ref().child('chats').child(msgDbId).push(myMsg);
+        } else if (data.hasChild(msgDbIdSwapped)) {
+          database().ref().child('chats').child(msgDbIdSwapped).push(myMsg);
+        } else {
+          database().ref().child('chats').child(msgDbId).push(myMsg);
+          setCalling(!calling);
+        }
+      });
   };
 
-
-//  const onSnd = (onSendProp,text) => {
-//   console.log("texttexttexttexttext",text)
-//   onSendProp(messages => setMessages(previousMessages => GiftedChat.append(previousMessages, messages)))
-//  }
   return (
     <SafeAreaView style={{flex: 1}}>
       <View style={{flex: 1}}>
         <GiftedChat
           messages={messages}
-          // renderSend = {props => {
-          //   return(
-          //     <View style={{flex:1, backgroundColor:"white", maxWidth:"24%",alignItems:"center", justifyContent:"space-around", height:"100%", flexDirection:"row"}}>
-          //       <View style={{}}>
-          //         <Image style={{width:30, height:40}} source={require("./image.png")}/>
-          //       </View>
-          //       <View style={{}}>
-          //         <Text onPress={(text)=>onSnd(props.onSend,text)} style={{fontSize:16, fontWeight:"800", color:"blue"}}>Send</Text>
-          //       </View>
-
-          //     </View>
-          //   )
-          // }}
-          // renderInputToolbar = {props => {
-          //   return(
-          //     <InputToolbar />
-          //   )
-          // }}
           renderBubble={props => {
             return (
               <Bubble
@@ -134,10 +110,10 @@ const Chat = ({route},props) => {
                 }}
                 wrapperStyle={{
                   left: {
-                    backgroundColor: 'maroon',
+                    backgroundColor: '#032de2',
                   },
                   right: {
-                    backgroundColor: 'green',
+                    backgroundColor: 'maroon',
                   },
                 }}
               />
@@ -146,7 +122,7 @@ const Chat = ({route},props) => {
           onSend={messages => onSend(messages)}
           user={{
             _id: loginUserUid,
-            name:name
+            name: name,
           }}
         />
       </View>

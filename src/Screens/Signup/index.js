@@ -1,28 +1,23 @@
 import {View, Text, TextInput, Button, StyleSheet} from 'react-native';
 import React, {useState} from 'react';
 import auth from '@react-native-firebase/auth';
-import database from "@react-native-firebase/database";
+import database from '@react-native-firebase/database';
 
 const Signup = ({navigation}) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const onSignup = () => {
-
     auth()
       .createUserWithEmailAndPassword(email, password)
       .then(value => {
-        console.log("value => ",value.user.uid)
+        console.log('value => ', value.user.uid);
         const userData = {
-          uid:value.user.uid,
-          name:name
-        }
-        database()
-        .ref()
-        .child("users")
-        .child("userData")
-        .push(userData);
-        navigation.navigate('Login')
+          uid: value.user.uid,
+          name: name,
+        };
+        database().ref().child('users').child('userData').push(userData);
+        navigation.navigate('Login');
       })
       .catch(error => console.log(error));
   };
@@ -63,6 +58,4 @@ const Signup = ({navigation}) => {
 
 export default Signup;
 
-const styles = StyleSheet.create({
-  
-})
+const styles = StyleSheet.create({});
