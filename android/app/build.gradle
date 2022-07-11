@@ -221,18 +221,18 @@ android {
         }
     }
     signingConfigs {
-        debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
-        }
-        // release {
-        //     storeFile file('firebase_chat_app.keystore')
-        //     storePassword '12345678'
-        //     keyAlias 'firebase_chat_app'
-        //     keyPassword '12345678'
+        // debug {
+        //     storeFile file('debug.keystore')
+        //     storePassword 'android'
+        //     keyAlias 'androiddebugkey'
+        //     keyPassword 'android'
         // }
+        release {
+            storeFile file('firebase_chat_app.keystore')
+            storePassword '12345678'
+            keyAlias 'firebase_chat_app'
+            keyPassword '12345678'
+        }
     }
     buildTypes {
         debug {
